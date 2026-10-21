@@ -1,0 +1,41 @@
+What happens when you type https://www.google.com in your browser and press Enter
+
+Every day we type a web address and a page appears in less than a second. Behind this simple action, many systems work together. This post follows the request step by step: DNS, TCP/IP, firewall, HTTPS/SSL, load balancer, web server, application server and database.
+
+1. DNS request
+
+Computers talk to each other with IP addresses, not with names. The browser first checks its own cache, then the operating system cache and the hosts file. If nothing is found, it asks a DNS resolver (usually the one of the ISP or a public one). The resolver asks a root server, which points to the .com TLD server, which points to the authoritative name server of google.com. This server answers with the IP address of www.google.com (an A record for IPv4 or an AAAA record for IPv6). The resolver caches the answer for a time defined by the TTL and sends it to the browser.
+
+2. TCP/IP
+
+With the IP address, the browser opens a connection to the server. For https the destination port is 443. TCP gives a reliable connection using a three-way handshake: the client sends SYN, the server answers SYN-ACK, and the client sends ACK. IP is in charge of routing the packets through many routers until they reach the server.
+
+3. Firewall
+
+Before reaching the servers, the packets go through a firewall. A firewall filters the traffic according to rules (source, destination, port, protocol). It allows traffic on port 443 for the website and blocks everything else, which reduces the attack surface.
+
+4. HTTPS/SSL
+
+HTTPS is HTTP protected by TLS (the successor of SSL). After the TCP connection, a TLS handshake happens. The server sends its SSL certificate, which proves its identity and is signed by a trusted certificate authority. The browser checks the certificate, then both sides agree on keys and start to use symmetric encryption. From this point the traffic is encrypted, so nobody between the browser and the server can read or change it.
+
+5. Load balancer
+
+A big website like Google uses many servers. A load balancer (for example HAProxy) receives the request and distributes it to one of the available servers using an algorithm such as Round Robin or Least Connections. It also checks the health of the servers and stops sending traffic to a server that is down. In many setups, the load balancer is also the place where the SSL is terminated.
+
+6. Web server
+
+The chosen server runs a web server such as Nginx. It receives the HTTP request, serves static files (images, CSS, JavaScript) directly, and forwards dynamic requests to the application server.
+
+7. Application server
+
+The application server runs the code of the website. It reads the request, applies the business logic and generates the dynamic web page. When it needs data (search results, user preferences), it asks the database.
+
+8. Database
+
+The database (for example MySQL) stores and organizes the data. It receives a query from the application server, finds the data and sends it back. The application server uses this data to build the final HTML page.
+
+The response
+
+The page goes back through the same path: application server, web server, load balancer, firewall and the Internet, encrypted with TLS. The browser decrypts it, reads the HTML and then requests the other resources (CSS, JavaScript, images). Finally it renders the page on the screen.
+
+All this happens in a few milliseconds, which shows how well these layers work together.
